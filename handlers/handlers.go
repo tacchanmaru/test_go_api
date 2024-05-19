@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"errors"
 
 	"github.com/gorilla/mux"
 	"github.com/tacchanmaru/test_go_api/models"
@@ -17,14 +18,30 @@ func HelloHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func PostArticleHandler(w http.ResponseWriter, req *http.Request){
-	article := models.Article1
-	jsonData, err := json.Marshal(article)
+
+	length, err := strconv.Atoi(req.Header.Get("Content-Length"))
 	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, "cannot get content length\n", http.StatusBadRequest)
+		return
+	}
+	reqBodybuffer := make([]byte, length)
+
+	if _, err := req.Body.Read(reqBodybuffer); !errors.Is(err, io.EOF) {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	w.Write(jsonData)
+	defer req.Body.Close()
+
+	// article := models.Article1
+	// jsonData, err := json.Marshal(article)
+	// if err != nil {
+	// 	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// w.Write(jsonData)
+
 }
 
 func ArticleListHandler(w http.ResponseWriter, req *http.Request){
@@ -50,7 +67,6 @@ func ArticleListHandler(w http.ResponseWriter, req *http.Request){
 	}
 
 	w.Write(jsonData)
-
 }
 
 func ArticleDetailHandler(w http.ResponseWriter, req *http.Request){
