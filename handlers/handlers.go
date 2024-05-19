@@ -33,14 +33,20 @@ func PostArticleHandler(w http.ResponseWriter, req *http.Request){
 
 	defer req.Body.Close()
 
-	// article := models.Article1
-	// jsonData, err := json.Marshal(article)
-	// if err != nil {
-	// 	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	// 	return
-	// }
+	var reqArticle models.Article
+	if err := json.Unmarshal(reqBodybuffer, &reqArticle); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
 
-	// w.Write(jsonData)
+	article := reqArticle
+	jsonData, err := json.Marshal(article)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(jsonData)
 
 }
 
